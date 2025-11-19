@@ -27,4 +27,10 @@ public class HabitoController {
         var listHabitos = repository.findAll();
         return ResponseEntity.ok(listHabitos);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteHabito(@PathVariable Long id){
+        repository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }

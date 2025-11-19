@@ -1,4 +1,4 @@
-package com.habts.routine;
+package com.habts.routine.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
