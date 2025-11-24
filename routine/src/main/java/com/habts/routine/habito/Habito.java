@@ -1,5 +1,6 @@
 package com.habts.routine.habito;
 
+import com.habts.routine.habito.dtos.DetalhesCadastro;
 import jakarta.persistence.*;
 
 @Entity
@@ -11,14 +12,14 @@ public class Habito {
     private Long id;
 
     private String nome;
-    private String meta;
+    private Integer meta;
     private String unidade;
     private String icone;
     private String cor;
 
     public Habito() {}
 
-    Habito(String nome, String meta, String unidade, String icone, String cor){
+    Habito(String nome, Integer meta, String unidade, String icone, String cor){
         this.nome = nome;
         this.meta = meta;
         this.unidade = unidade;
@@ -66,11 +67,13 @@ public class Habito {
         this.nome = nome;
     }
 
-    public String getMeta() {
+    public Integer getMeta() {
         return meta;
     }
 
-    public void setMeta(String meta) {
+    public void setMeta(Integer meta) {
         this.meta = meta;
     }
+
+
 }
