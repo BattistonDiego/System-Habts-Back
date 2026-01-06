@@ -1,6 +1,7 @@
 package com.habts.routine.habito;
 
 import com.habts.routine.habito.dtos.DetalhesCadastro;
+import com.habts.routine.habitoHistory.HistoricoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,32 +14,37 @@ import java.util.Optional;
 public class HabitoController {
 
     @Autowired
-    private HabitoRepository repository;
+    private HabitoRepository habitoRepository;
+
+    @Autowired
+    private HistoricoRepository historicoRepository;
 
 
     @PostMapping
     public ResponseEntity cadastrarHabito(@RequestBody DetalhesCadastro dto){
         var newHabito = new Habito(dto.nome(), dto.meta(), dto.unidade(), dto.icone(), dto.cor());
 
-        var habtitsaved = repository.save(newHabito);
+        var habtitsaved = habitoRepository.save(newHabito);
         return ResponseEntity.ok(habtitsaved);
     }
 
     @GetMapping
     public ResponseEntity<List<Habito>> listHabito(){
-        var listHabitos = repository.findAll();
+        var listHabitos = habitoRepository.findAll();
         return ResponseEntity.ok(listHabitos);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity deleteHabito(@PathVariable Long id){
-        repository.deleteById(id);
+        historicoRepository.deleteByHabitoId(id);
+        habitoRepository.deleteById(id);
+
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Habito> editHabito(@PathVariable Long id,  @RequestBody DetalhesCadastro dto){
-        Optional<Habito> habito = repository.findById(id);
+        Optional<Habito> habito = habitoRepository.findById(id);
 
         if(habito.isEmpty()){
             return ResponseEntity.notFound().build();
@@ -62,7 +68,7 @@ public class HabitoController {
             habito.get().setCor(dto.cor());
         }
 
-        var habitEdited = repository.save(habito.get());
+        var habitEdited = habitoRepository.save(habito.get());
 
         return ResponseEntity.ok(habitEdited);
     }
