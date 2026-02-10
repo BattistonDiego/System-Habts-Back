@@ -24,4 +24,21 @@ public class JwtService {
                 .signWith(key)
                 .compact();
     }
+
+    public void validarToken(String token) {
+        Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token);
+    }
+
+    public String validarTokenERetornarEmail(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
 }
