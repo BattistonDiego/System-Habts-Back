@@ -1,4 +1,4 @@
-package com.habts.routine.security;
+package com.habts.routine.infrastructure.security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

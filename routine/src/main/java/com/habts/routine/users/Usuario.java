@@ -11,9 +11,19 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String nome;
+
     private String email;
 
+    private String telefone;
+
     private String senha;
+
+    @Enumerated(EnumType.STRING)
+    private StatusUsuario status;
+
+    @Enumerated(EnumType.STRING)
+    private PerfilUsuario perfil;
 
     public Usuario() {}
 
@@ -21,6 +31,16 @@ public class Usuario {
         this.id = id;
         this.email = email;
         this.senha = senha;
+    }
+
+    public Usuario(Long id, String nome, String email, String telefone, String senha, StatusUsuario status, PerfilUsuario perfil) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.telefone = telefone;
+        this.senha = senha;
+        this.status = status;
+        this.perfil = perfil;
     }
 
     public Long getId() {
@@ -45,5 +65,37 @@ public class Usuario {
 
     public void setSenha(String senha) {
         this.senha = senha;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
+    public StatusUsuario getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusUsuario status) {
+        this.status = status;
+    }
+
+    public PerfilUsuario getPerfil() {
+        return perfil;
+    }
+
+    public void setPerfil(PerfilUsuario perfil) {
+        this.perfil = perfil;
     }
 }

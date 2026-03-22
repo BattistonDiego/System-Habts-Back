@@ -1,4 +1,4 @@
-package com.habts.routine.security;
+package com.habts.routine.infrastructure.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

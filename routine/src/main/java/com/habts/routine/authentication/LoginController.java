@@ -1,12 +1,9 @@
 package com.habts.routine.authentication;
 
 
-import com.habts.routine.habito.HabitoRepository;
-import com.habts.routine.security.JwtService;
+import com.habts.routine.infrastructure.security.JwtService;
 import com.habts.routine.users.Usuario;
 import com.habts.routine.users.UsuarioRepository;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
