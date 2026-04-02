@@ -1,4 +1,6 @@
-package com.habts.routine.users;
+package com.habts.routine.users.dtos;
+
+import com.habts.routine.users.Usuario;
 
 public record DtoResponseUser(Long id,
                               String nome,

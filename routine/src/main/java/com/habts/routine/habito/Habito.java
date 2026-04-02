@@ -1,6 +1,7 @@
 package com.habts.routine.habito;
 
 import com.habts.routine.habito.dtos.DetalhesCadastro;
+import com.habts.routine.users.Usuario;
 import jakarta.persistence.*;
 
 @Entity
@@ -11,6 +12,9 @@ public class Habito {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private Usuario usuario;
     private String nome;
     private Integer meta;
     private String unidade;
@@ -19,7 +23,8 @@ public class Habito {
 
     public Habito() {}
 
-    Habito(String nome, Integer meta, String unidade, String icone, String cor){
+    Habito(Usuario usuario, String nome, Integer meta, String unidade, String icone, String cor){
+        this.usuario = usuario;
         this.nome = nome;
         this.meta = meta;
         this.unidade = unidade;
@@ -75,5 +80,11 @@ public class Habito {
         this.meta = meta;
     }
 
+    public Usuario getUsuario() {
+        return usuario;
+    }
 
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
 }

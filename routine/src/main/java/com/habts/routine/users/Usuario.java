@@ -1,6 +1,8 @@
 package com.habts.routine.users;
 
 
+import com.habts.routine.users.enums.PerfilUsuario;
+import com.habts.routine.users.enums.StatusUsuario;
 import jakarta.persistence.*;
 
 @Entity

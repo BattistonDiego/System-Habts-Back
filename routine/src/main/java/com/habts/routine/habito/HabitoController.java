@@ -2,9 +2,14 @@ package com.habts.routine.habito;
 
 import com.habts.routine.habito.dtos.DetalhesCadastro;
 import com.habts.routine.habitoHistory.HistoricoRepository;
+import com.habts.routine.users.Usuario;
+import com.habts.routine.users.UsuarioRepository;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,20 +24,30 @@ public class HabitoController {
     private HabitoRepository habitoRepository;
 
     @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
     private HistoricoRepository historicoRepository;
 
 
     @PostMapping
-    public ResponseEntity cadastrarHabito(@RequestBody DetalhesCadastro dto){
-        var newHabito = new Habito(dto.nome(), dto.meta(), dto.unidade(), dto.icone(), dto.cor());
+    public ResponseEntity cadastrarHabito(@RequestBody @Valid DetalhesCadastro dto){
 
+        Usuario usuario = usuarioRepository.findById(dto.usuarioId()).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        var newHabito = new Habito(usuario, dto.nome(), dto.meta(), dto.unidade(), dto.icone(), dto.cor());
         var habtitsaved = habitoRepository.save(newHabito);
+
         return ResponseEntity.ok(habtitsaved);
     }
 
     @GetMapping
     public ResponseEntity<List<Habito>> listHabito(){
-        var listHabitos = habitoRepository.findAll();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        var userLogged = authentication.getName();
+        Usuario user = usuarioRepository.findByEmail(userLogged).get();
+
+        var listHabitos = habitoRepository.findByUsuarioId(user.getId());
         return ResponseEntity.ok(listHabitos);
     }
 
