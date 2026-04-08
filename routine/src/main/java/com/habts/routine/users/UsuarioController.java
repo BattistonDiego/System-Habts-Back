@@ -3,6 +3,8 @@ package com.habts.routine.users;
 
 import com.habts.routine.users.dtos.DtoRequestUser;
 import com.habts.routine.users.dtos.DtoResponseUser;
+
+import com.habts.routine.users.enums.StatusUsuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +12,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import static org.antlr.v4.runtime.tree.xpath.XPath.findAll;
 
 @RestController
 @RequestMapping("/users")
@@ -51,4 +61,24 @@ public class UsuarioController {
 
         return usuario;
     }
+
+    @GetMapping
+    public Page<DtoResponseUser> getAllUsers(Pageable pageable) {
+
+        return usuarioRepository.findAll(pageable).map(DtoResponseUser::fromEntity);
+    }
+
+
+    @GetMapping("/resume")
+    public Map<String, Long> getResume(){
+        long ativos = usuarioRepository.countByStatus(StatusUsuario.ATIVO);
+        long inativos = usuarioRepository.countByStatus(StatusUsuario.INATIVO);
+
+        Map<String, Long> resume = new HashMap<>();
+        resume.put("ativos", ativos);
+        resume.put("inativos", inativos);
+
+        return resume;
+    }
+
 }
