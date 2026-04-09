@@ -49,6 +49,18 @@ public class UsuarioController {
 
     }
 
+    @GetMapping("/byId")
+    public ResponseEntity<DtoResponseUser> getById(@RequestParam long id) {
+        Optional<Usuario> userOptional = usuarioRepository.findById(id);
+
+        if(userOptional.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(DtoResponseUser.fromEntity(userOptional.get()));
+
+    }
+
 
     @GetMapping("/me")
     public DtoResponseUser getUsuarioLogado(Authentication authentication) {
@@ -80,5 +92,48 @@ public class UsuarioController {
 
         return resume;
     }
+
+    @PutMapping
+    public ResponseEntity<DtoResponseUser> inativeUser(@RequestBody DtoRequestUser user) {
+        Usuario usuario = usuarioRepository.findByEmail(user.email()).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        usuario.setStatus(StatusUsuario.INATIVO);
+
+
+        return ResponseEntity.ok(DtoResponseUser.fromEntity(usuarioRepository.save(usuario)));
+    }
+
+    @PutMapping("/{id}")
+    public  ResponseEntity<DtoResponseUser> updateUser(@PathVariable Long id, @RequestBody DtoRequestUser usuario) {
+        Optional<Usuario> userOptional = usuarioRepository.findById(id);
+
+        if (userOptional.isEmpty()) {
+            return  ResponseEntity.notFound().build();
+        }
+
+        Usuario user = userOptional.get();
+
+        if(usuario.nome()!= null){
+            user.setNome(usuario.nome());
+        }
+
+        if(usuario.email()!= null){
+            user.setEmail(usuario.email());
+        }
+        if(usuario.senha()!= null){
+            user.setSenha(passwordEncoder.encode(usuario.senha()));
+        }
+
+        if(usuario.perfil()!= null){
+            user.setPerfil(usuario.perfil());
+        }
+
+        if(usuario.status()!= null){
+            user.setStatus(usuario.status());
+        }
+
+        return ResponseEntity.ok(DtoResponseUser.fromEntity(usuarioRepository.save(user)));
+    }
+
 
 }

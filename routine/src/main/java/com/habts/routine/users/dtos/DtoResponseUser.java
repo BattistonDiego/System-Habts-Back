@@ -1,6 +1,8 @@
 package com.habts.routine.users.dtos;
 
 import com.habts.routine.users.Usuario;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 public record DtoResponseUser(Long id,
                               String nome,
