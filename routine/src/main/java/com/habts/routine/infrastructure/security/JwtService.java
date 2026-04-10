@@ -1,5 +1,6 @@
 package com.habts.routine.infrastructure.security;
 
+import com.habts.routine.users.enums.PerfilUsuario;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,6 @@ public class JwtService {
 
         return Jwts.builder()
                 .setSubject(email)
-
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hora
                 .signWith(key)
