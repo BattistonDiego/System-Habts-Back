@@ -1,5 +1,6 @@
 package com.habts.routine.habitoHistory;
 
+import com.habts.routine.habito.Habito;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -21,4 +22,11 @@ public interface HistoricoRepository extends JpaRepository<Historico,Long> {
     @Modifying
     @Transactional
     void deleteByHabitoId(Long habitoid);
+
+    List<Historico> findByHabitoIdAndHabitoUsuarioEmailOrderByDataDesc(
+            Long habitoId,
+            String email
+    );
+
+
 }

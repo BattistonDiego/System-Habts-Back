@@ -16,11 +16,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.antlr.v4.runtime.tree.xpath.XPath.findAll;
 
 @RestController
 @RequestMapping("/users")
@@ -75,9 +73,17 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public Page<DtoResponseUser> getAllUsers(Pageable pageable) {
+    public Page<DtoResponseUser> getAllUsers(@RequestParam(required = false) StatusUsuario status, Pageable pageable) {
 
-        return usuarioRepository.findAll(pageable).map(DtoResponseUser::fromEntity);
+        Page<Usuario> page;
+
+        if(status != null) {
+            page = usuarioRepository.findByStatus(status, pageable);
+        }else{
+            page = usuarioRepository.findAll(pageable);
+        }
+
+        return page.map(DtoResponseUser::fromEntity);
     }
 
 

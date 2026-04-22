@@ -5,6 +5,7 @@ import com.habts.routine.habito.HabitoRepository;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -56,4 +57,38 @@ public class HistoricoController {
         }
         return ResponseEntity.ok(historicoRepository.searchByData(date));
     }
+
+    @GetMapping("/streak/{habitoId}")
+    public int calcularStreak(@PathVariable Long habitoId){
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        List<Historico> registros = historicoRepository.findByHabitoIdAndHabitoUsuarioEmailOrderByDataDesc(habitoId, email);
+
+        if(registros.isEmpty()){
+            return 0;
+        }
+
+        int streak = 0;
+        LocalDate base = LocalDate.now();
+
+        if (!registros.get(0).getData().equals(base)) {
+            base = base.minusDays(1);
+        }
+
+        for (Historico h : registros) {
+            LocalDate esperado = base.minusDays(streak);
+
+            if (h.getData().equals(esperado)) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+        return streak;
+    }
+
+
 }
