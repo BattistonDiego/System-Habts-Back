@@ -1,6 +1,5 @@
 package com.habts.routine.habitoHistory;
 
-import com.habts.routine.habito.Habito;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -26,6 +25,18 @@ public interface HistoricoRepository extends JpaRepository<Historico,Long> {
     List<Historico> findByHabitoIdAndHabitoUsuarioEmailOrderByDataDesc(
             Long habitoId,
             String email
+    );
+
+
+    @Query(value = "SELECT TO_CHAR(data, 'Day') as dia, COUNT(*) as quantidade " +
+            "FROM tb_historico " +
+            "WHERE habito_id IN (SELECT id FROM tb_habito WHERE user_id = :usuarioId) " +
+            "AND data BETWEEN :inicio AND :fim " +
+            "GROUP BY TO_CHAR(data, 'Day')", nativeQuery = true)
+    List<ResumoDiarioDTO> findResumoSemanal(
+            @Param("usuarioId") Long usuarioId,
+            @Param("inicio") LocalDate inicio,
+            @Param("fim") LocalDate fim
     );
 
 

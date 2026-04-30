@@ -2,12 +2,14 @@ package com.habts.routine.habitoHistory;
 
 import com.habts.routine.habito.Habito;
 import com.habts.routine.habito.HabitoRepository;
+import com.habts.routine.habitoHistory.dtos.DetalhesSave;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -90,5 +92,13 @@ public class HistoricoController {
         return streak;
     }
 
+    @GetMapping("/resumo-semanal/{usuarioId}")
+    public List<ResumoDiarioDTO> calculaResumoSemanal(@PathVariable Long usuarioId){
+        LocalDate hoje = LocalDate.now();
+        LocalDate inicioSemana = hoje.with(DayOfWeek.MONDAY);
+        LocalDate fimSemana = hoje.with(DayOfWeek.SUNDAY);
 
+        return historicoRepository.findResumoSemanal(usuarioId, inicioSemana, fimSemana);
+
+    }
 }

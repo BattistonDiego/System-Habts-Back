@@ -1,4 +1,4 @@
-package com.habts.routine.habitoHistory;
+package com.habts.routine.habitoHistory.dtos;
 
 
 public record DetalhesSave(
