@@ -39,5 +39,10 @@ public interface HistoricoRepository extends JpaRepository<Historico,Long> {
             @Param("fim") LocalDate fim
     );
 
+    @Query("SELECT DISTINCT h.data FROM Historico h " +
+            "WHERE h.habito.usuario.id = :usuarioId " +
+            "ORDER BY h.data ASC")
+    List<LocalDate> findDatasByUsuario(@Param("usuarioId") Long usuarioId);
+
 
 }
