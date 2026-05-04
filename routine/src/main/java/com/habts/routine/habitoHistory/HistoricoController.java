@@ -55,4 +55,14 @@ public class HistoricoController {
     public int getMelhorSequencia(@PathVariable Long usuarioId) {
         return historicoService.getMelhorSequencia(usuarioId);
     }
+
+    @GetMapping("/este-mes/{usuarioId}")
+    public Long getEsteMes(@PathVariable Long usuarioId) {
+        return historicoService.getEsteMes(usuarioId);
+    }
+
+    @GetMapping("/taxa-media/{usuarioId}")
+    public Double getTaxaMedia(@PathVariable Long usuarioId) {
+        return historicoService.getTaxaMedia(usuarioId);
+    }
 }

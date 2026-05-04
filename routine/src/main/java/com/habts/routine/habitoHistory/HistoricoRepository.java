@@ -44,5 +44,25 @@ public interface HistoricoRepository extends JpaRepository<Historico,Long> {
             "ORDER BY h.data ASC")
     List<LocalDate> findDatasByUsuario(@Param("usuarioId") Long usuarioId);
 
+    @Query(value = "SELECT COUNT(*) FROM tb_historico " +
+            "WHERE habito_id IN (SELECT id FROM tb_habito WHERE user_id = :usuarioId) " +
+            "AND EXTRACT(MONTH FROM data) = :mes " +
+            "AND EXTRACT(YEAR FROM data) = :ano", nativeQuery = true)
+    Long countByMes(@Param("usuarioId") Long usuarioId,
+                    @Param("mes") int mes,
+                    @Param("ano") int ano);
+
+
+    @Query(value = "SELECT " +
+            "ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tb_habito WHERE user_id = :usuarioId) / " +
+            "COUNT(DISTINCT data)) " +
+            "FROM tb_historico " +
+            "WHERE habito_id IN (SELECT id FROM tb_habito WHERE user_id = :usuarioId) " +
+            "AND EXTRACT(MONTH FROM data) = :mes " +
+            "AND EXTRACT(YEAR FROM data) = :ano", nativeQuery = true)
+    Double getTaxaMedia(@Param("usuarioId") Long usuarioId,
+                        @Param("mes") int mes,
+                        @Param("ano") int ano);
+
 
 }

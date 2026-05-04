@@ -99,4 +99,17 @@ public class HistoricoService {
         }
         return melhorSeq;
     }
+
+    public Long getEsteMes(Long usuarioId) {
+        int mes = LocalDate.now().getMonthValue();
+        int ano = LocalDate.now().getYear();
+        return historicoRepository.countByMes(usuarioId, mes, ano);
+    }
+
+    public Double getTaxaMedia(Long usuarioId) {
+        int mes = LocalDate.now().getMonthValue();
+        int ano = LocalDate.now().getYear();
+        Double taxa = historicoRepository.getTaxaMedia(usuarioId, mes, ano);
+        return taxa != null ? taxa : 0.0;
+    }
 }
