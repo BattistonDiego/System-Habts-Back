@@ -40,9 +40,11 @@ public interface HistoricoRepository extends JpaRepository<Historico,Long> {
     );
 
     @Query("SELECT DISTINCT h.data FROM Historico h " +
-            "WHERE h.habito.usuario.id = :usuarioId " +
+            "WHERE h.habito.id = :habitoId " +
+            "AND h.habito.usuario.id = :usuarioId " +
             "ORDER BY h.data ASC")
-    List<LocalDate> findDatasByUsuario(@Param("usuarioId") Long usuarioId);
+    List<LocalDate> findDatasByHabitoEUsuario(@Param("habitoId") Long habitoId,
+                                              @Param("usuarioId") Long usuarioId);
 
     @Query(value = "SELECT COUNT(*) FROM tb_historico " +
             "WHERE habito_id IN (SELECT id FROM tb_habito WHERE user_id = :usuarioId) " +

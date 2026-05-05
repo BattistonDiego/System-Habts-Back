@@ -51,9 +51,9 @@ public class HistoricoController {
         return historicoService.getResumoSemanal(usuarioId);
     }
 
-    @GetMapping("/melhor-sequencia/{usuarioId}")
-    public int getMelhorSequencia(@PathVariable Long usuarioId) {
-        return historicoService.getMelhorSequencia(usuarioId);
+    @GetMapping("/melhor-sequencia/{usuarioId}/{habitoId}")
+    public int getMelhorSequencia(@PathVariable Long usuarioId, @PathVariable Long habitoId) {
+        return historicoService.getMelhorSequenciaPorHabito(usuarioId, habitoId);
     }
 
     @GetMapping("/este-mes/{usuarioId}")

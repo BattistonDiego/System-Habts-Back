@@ -78,8 +78,9 @@ public class HistoricoService {
         return historicoRepository.findResumoSemanal(usuarioId, inicioSemana, fimSemana);
     }
 
-    public int getMelhorSequencia(Long usuarioId) {
-        List<LocalDate> datas = historicoRepository.findDatasByUsuario(usuarioId);
+    public int getMelhorSequenciaPorHabito(Long usuarioId, Long habitoId) {
+        List<LocalDate> datas = historicoRepository
+                .findDatasByHabitoEUsuario(habitoId, usuarioId);
 
         if (datas.isEmpty()) return 0;
 
@@ -97,6 +98,7 @@ public class HistoricoService {
                 sequenciaAtual = 1;
             }
         }
+
         return melhorSeq;
     }
 
