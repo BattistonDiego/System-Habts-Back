@@ -1,6 +1,7 @@
 package com.habts.routine.habito;
 
 import com.habts.routine.habito.dtos.DetalhesCadastro;
+import com.habts.routine.habito.dtos.HabitoResponse;
 import com.habts.routine.habitoHistory.HistoricoRepository;
 import com.habts.routine.users.Usuario;
 import com.habts.routine.users.UsuarioRepository;
@@ -34,20 +35,22 @@ public class HabitoController {
     public ResponseEntity cadastrarHabito(@RequestBody @Valid DetalhesCadastro dto){
 
         Usuario usuario = usuarioRepository.findById(dto.usuarioId()).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        var newHabito = new Habito(usuario, dto.nome(), dto.meta(), dto.unidade(), dto.icone(), dto.cor());
+
+        int totalHabitos = habitoRepository.countByUsuarioId(usuario.getId());
+        var newHabito = new Habito(usuario, dto.nome(), dto.meta(), dto.unidade(), dto.icone(), dto.cor(), totalHabitos);
         var habtitsaved = habitoRepository.save(newHabito);
 
         return ResponseEntity.ok(habtitsaved);
     }
 
     @GetMapping
-    public ResponseEntity<List<Habito>> listHabito(){
+    public ResponseEntity<List<HabitoResponse>> listHabito(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         var userLogged = authentication.getName();
         Usuario user = usuarioRepository.findByEmail(userLogged).get();
 
-        var listHabitos = habitoRepository.findByUsuarioId(user.getId());
+        var listHabitos = habitoRepository.findByUsuarioIdOrderByOrdemAsc(user.getId()).stream().map(h -> new HabitoResponse(h.getId(), h.getNome(), h.getMeta(), h.getUnidade(), h.getIcone(), h.getCor(), h.getOrdem())).toList();
         return ResponseEntity.ok(listHabitos);
     }
 

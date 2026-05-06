@@ -20,16 +20,19 @@ public class Habito {
     private String unidade;
     private String icone;
     private String cor;
+    @Column(nullable = false)
+    private Integer ordem = 0;
 
     public Habito() {}
 
-    Habito(Usuario usuario, String nome, Integer meta, String unidade, String icone, String cor){
+    Habito(Usuario usuario, String nome, Integer meta, String unidade, String icone, String cor, Integer ordem) {
         this.usuario = usuario;
         this.nome = nome;
         this.meta = meta;
         this.unidade = unidade;
         this.icone = icone;
         this.cor = cor;
+        this.ordem = ordem;
     }
 
     public String getUnidade() {
@@ -88,4 +91,11 @@ public class Habito {
         this.usuario = usuario;
     }
 
+    public Integer getOrdem() {
+        return ordem;
+    }
+
+    public void setOrdem(Integer ordem) {
+        this.ordem = ordem;
+    }
 }
