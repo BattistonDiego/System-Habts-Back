@@ -20,7 +20,7 @@ public class Habito {
     private String unidade;
     private String icone;
     private String cor;
-    @Column(nullable = false)
+    @Column(columnDefinition = "integer default 0")
     private Integer ordem = 0;
 
     public Habito() {}
