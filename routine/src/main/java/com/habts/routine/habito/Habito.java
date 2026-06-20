@@ -24,7 +24,7 @@ public class Habito {
     private Integer ordem = 0;
 
     public Habito() {}
-
+//Teste CI
     Habito(Usuario usuario, String nome, Integer meta, String unidade, String icone, String cor, Integer ordem) {
         this.usuario = usuario;
         this.nome = nome;
