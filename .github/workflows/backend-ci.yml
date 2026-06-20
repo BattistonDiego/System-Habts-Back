@@ -1,0 +1,62 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'routine/**'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'routine/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: routine
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Dar permissão de execução ao mvnw
+        run: chmod +x mvnw
+
+      - name: Build e testes com Maven Wrapper
+        run: ./mvnw clean install
+
+  docker-build-push:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
+    defaults:
+      run:
+        working-directory: routine
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build e push da imagem
+        uses: docker/build-push-action@v5
+        with:
+          context: ./routine
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/system-habts-backend:latest
