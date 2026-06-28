@@ -218,7 +218,7 @@ public class HistoricoService {
         LocalDate registroAntigo = getDataAntiga(list);
 
 
-        return new DtoEstatisticaHabito(sequenciaAtual,melhorSequencia,taxaConclusao, registroAntigo);
+        return new DtoEstatisticaHabito(sequenciaAtual,melhorSequencia,taxaConclusao, registroAntigo, list.size());
 
     }
 
