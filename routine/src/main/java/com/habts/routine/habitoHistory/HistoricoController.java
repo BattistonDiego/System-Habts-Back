@@ -1,8 +1,7 @@
 package com.habts.routine.habitoHistory;
-import com.habts.routine.habitoHistory.Historico;
-import com.habts.routine.habitoHistory.HistoricoService;
-import com.habts.routine.habitoHistory.ResumoDiarioDTO;
+import com.habts.routine.habito.Habito;
 import com.habts.routine.habitoHistory.dtos.DetalhesSave;
+import com.habts.routine.habitoHistory.dtos.DtoEstatisticaHabito;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -64,5 +63,10 @@ public class HistoricoController {
     @GetMapping("/taxa-media/{usuarioId}")
     public Double getTaxaMedia(@PathVariable Long usuarioId) {
         return historicoService.getTaxaMedia(usuarioId);
+    }
+
+    @GetMapping("/{habitoId}/estatisticas")
+    public DtoEstatisticaHabito getEstatisticas(@PathVariable Long habitoId){
+        return historicoService.calcularEstatisticas(habitoId);
     }
 }

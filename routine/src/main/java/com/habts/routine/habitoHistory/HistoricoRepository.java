@@ -1,5 +1,6 @@
 package com.habts.routine.habitoHistory;
 
+import com.habts.routine.habito.Habito;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -65,6 +66,9 @@ public interface HistoricoRepository extends JpaRepository<Historico,Long> {
     Double getTaxaMedia(@Param("usuarioId") Long usuarioId,
                         @Param("mes") int mes,
                         @Param("ano") int ano);
+
+
+    List<Historico> findByHabitoOrderByDataDesc(Habito habito);
 
 
 }

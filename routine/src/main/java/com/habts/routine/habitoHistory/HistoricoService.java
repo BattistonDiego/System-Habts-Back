@@ -3,12 +3,17 @@ package com.habts.routine.habitoHistory;
 import com.habts.routine.habito.Habito;
 import com.habts.routine.habito.HabitoRepository;
 import com.habts.routine.habitoHistory.dtos.DetalhesSave;
+import com.habts.routine.habitoHistory.dtos.DtoEstatisticaHabito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -114,4 +119,107 @@ public class HistoricoService {
         Double taxa = historicoRepository.getTaxaMedia(usuarioId, mes, ano);
         return taxa != null ? taxa : 0.0;
     }
+
+    public int calcularSequenciaAtual(List<Historico> list) {
+        LocalDate dataAnterior = null;
+        int contador = 0;
+
+        if (list.isEmpty()) {
+            return 0;
+        }
+
+        if(ChronoUnit.DAYS.between(list.get(0).getData(), LocalDate.now()) > 1){
+            return 0;
+        }else{
+            for (Historico h : list) {
+                if (dataAnterior == null) {
+                    dataAnterior = h.getData();
+                    contador++;
+                } else {
+                    if(ChronoUnit.DAYS.between(h.getData(), dataAnterior) == 1){
+                        dataAnterior = dataAnterior.minusDays(1);
+                        contador++;
+                    }else{
+                        break;
+                    }
+                }
+            }
+        }
+
+        return contador;
+    }
+
+    public int calcularMelhorSequencia(List<Historico> list) {
+
+
+        int contador = 0;
+        int maiorSequencia = 0;
+
+        LocalDate dataAnterior = null;
+
+        if (list.isEmpty()) {
+            return 0;
+        }
+
+        for (Historico h : list) {
+            if (dataAnterior == null) {
+                dataAnterior = h.getData();
+                contador++;
+            }else{
+                if (ChronoUnit.DAYS.between(h.getData(), dataAnterior) == 1){
+                    dataAnterior = dataAnterior.minusDays(1);
+                    contador++;
+                }else{
+                    maiorSequencia = contador;
+                    dataAnterior = h.getData();
+                    contador = 1;
+                }
+            }
+            if(contador > maiorSequencia){
+                maiorSequencia = contador;
+            }
+        }
+
+        return maiorSequencia;
+    }
+
+    public int calcularTaxaConclusao(List<Historico> list) {
+
+        if (list.isEmpty()) {
+            return 0;
+        }
+
+        int totalRegistros = list.size();
+        Historico maisAntigo = list.get(list.size() - 1);
+        Long totalDias = ChronoUnit.DAYS.between(maisAntigo.getData(), LocalDate.now()) + 1;
+
+
+        return totalRegistros * 100 / totalDias.intValue();
+    }
+
+    public LocalDate getDataAntiga(List<Historico> list) {
+        if (list.isEmpty()) {
+            return null;
+        }
+
+        Historico maisAntigo = list.get(list.size() - 1);
+
+        return maisAntigo.getData();
+    }
+
+    public DtoEstatisticaHabito calcularEstatisticas(Long habitoId) {
+
+        Habito habito = habitoRepository.findById(habitoId).orElseThrow(() -> new RuntimeException("Hábito não encontrado"));
+        List<Historico> list  = historicoRepository.findByHabitoOrderByDataDesc(habito);
+
+        int melhorSequencia = calcularMelhorSequencia(list);
+        int sequenciaAtual = calcularSequenciaAtual(list);
+        int taxaConclusao = calcularTaxaConclusao(list);
+        LocalDate registroAntigo = getDataAntiga(list);
+
+
+        return new DtoEstatisticaHabito(sequenciaAtual,melhorSequencia,taxaConclusao, registroAntigo);
+
+    }
+
 }

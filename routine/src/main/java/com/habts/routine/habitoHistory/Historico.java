@@ -79,4 +79,6 @@ public class Historico {
     public void setMeta(Integer meta) {
         this.meta = meta;
     }
+
+
 }
