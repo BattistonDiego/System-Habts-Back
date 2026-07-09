@@ -1,6 +1,7 @@
 package com.habts.routine.habitoHistory;
 
 import com.habts.routine.habito.Habito;
+import com.habts.routine.habitoHistory.dtos.DtoAtividade;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -69,6 +70,15 @@ public interface HistoricoRepository extends JpaRepository<Historico,Long> {
 
 
     List<Historico> findByHabitoOrderByDataDesc(Habito habito);
+
+    @Query("SELECT new com.habts.routine.habitoHistory.dtos.DtoAtividade(h.data, COUNT(h)) " +
+            "FROM Historico h " +
+            "WHERE h.habito.usuario.id = :usuarioId " +
+            "AND h.data >= :dataInicio " +
+            "GROUP BY h.data " +
+            "ORDER BY h.data DESC")
+    List<DtoAtividade> buscarAtividade(@Param("usuarioId") Long usuarioId,
+                                       @Param("dataInicio") LocalDate dataInicio);
 
 
 }

@@ -3,9 +3,14 @@ package com.habts.routine.habitoHistory;
 import com.habts.routine.habito.Habito;
 import com.habts.routine.habito.HabitoRepository;
 import com.habts.routine.habitoHistory.dtos.DetalhesSave;
+import com.habts.routine.habitoHistory.dtos.DtoAtividade;
 import com.habts.routine.habitoHistory.dtos.DtoEstatisticaHabito;
+import com.habts.routine.users.Usuario;
+import com.habts.routine.users.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -24,6 +29,9 @@ public class HistoricoService {
 
     @Autowired
     private HabitoRepository habitoRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     public Optional<Historico> save(DetalhesSave dto) {
         Optional<Habito> habito = habitoRepository.findById(dto.habitoId());
@@ -221,5 +229,23 @@ public class HistoricoService {
         return new DtoEstatisticaHabito(sequenciaAtual,melhorSequencia,taxaConclusao, registroAntigo, list.size());
 
     }
+
+
+    public List<DtoAtividade> buscarAtividades(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        var userLogged = authentication.getName();
+        Usuario user = usuarioRepository.findByEmail(userLogged)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        LocalDate dataInicio = LocalDate.now().minusMonths(6);
+
+        return historicoRepository.buscarAtividade(user.getId(),dataInicio);
+    }
+
+
+
+
+
 
 }
