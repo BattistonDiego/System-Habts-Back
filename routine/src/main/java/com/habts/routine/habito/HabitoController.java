@@ -3,6 +3,7 @@ package com.habts.routine.habito;
 import com.habts.routine.habito.dtos.DetalhesCadastro;
 import com.habts.routine.habito.dtos.HabitoResponse;
 import com.habts.routine.habitoHistory.HistoricoRepository;
+import com.habts.routine.treinos.TesteComponent;
 import com.habts.routine.users.Usuario;
 import com.habts.routine.users.UsuarioRepository;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -13,7 +14,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -30,66 +33,41 @@ public class HabitoController {
     @Autowired
     private HistoricoRepository historicoRepository;
 
+    @Autowired
+    private HabitoService habitoService;
+
+    @Autowired
+    private TesteComponent testeComponent;
+
 
     @PostMapping
     public ResponseEntity cadastrarHabito(@RequestBody @Valid DetalhesCadastro dto){
-
-        Usuario usuario = usuarioRepository.findById(dto.usuarioId()).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        int totalHabitos = habitoRepository.countByUsuarioId(usuario.getId());
-        var newHabito = new Habito(usuario, dto.nome(), dto.meta(), dto.unidade(), dto.icone(), dto.cor(), totalHabitos);
-        var habtitsaved = habitoRepository.save(newHabito);
-
-        return ResponseEntity.ok(habtitsaved);
+        return habitoService.createHabito(dto);
     }
 
     @GetMapping
     public ResponseEntity<List<HabitoResponse>> listHabito(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        var userLogged = authentication.getName();
-        Usuario user = usuarioRepository.findByEmail(userLogged).get();
-
-        var listHabitos = habitoRepository.findByUsuarioIdOrderByOrdemAsc(user.getId()).stream().map(h -> new HabitoResponse(h.getId(), h.getNome(), h.getMeta(), h.getUnidade(), h.getIcone(), h.getCor(), h.getOrdem())).toList();
-        return ResponseEntity.ok(listHabitos);
+        return habitoService.listAllHabito();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity deleteHabito(@PathVariable Long id){
-        historicoRepository.deleteByHabitoId(id);
-        habitoRepository.deleteById(id);
-
-        return ResponseEntity.noContent().build();
+        return habitoService.deleteHabito(id);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Habito> editHabito(@PathVariable Long id,  @RequestBody DetalhesCadastro dto){
-        Optional<Habito> habito = habitoRepository.findById(id);
+        return habitoService.editarHabito(id, dto);
+    }
 
-        if(habito.isEmpty()){
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/testeComponent")
+    public Map<String, Long> soma(){
+        Long resultado = testeComponent.somar(1L, 1L);
 
-        if(dto.nome() != null){
-            habito.get().setNome(dto.nome());
-        }
+        Map<String, Long> soma = new HashMap<>();
 
-         if (dto.meta() != null){
-             habito.get().setMeta(dto.meta());
-         }
+        soma.put("Soma de 1 + 1 ", resultado);
 
-        if (dto.unidade() != null){
-            habito.get().setUnidade(dto.unidade());
-        }
-        if (dto.icone() != null){
-            habito.get().setIcone(dto.icone());
-        }
-        if (dto.cor() != null){
-            habito.get().setCor(dto.cor());
-        }
-
-        var habitEdited = habitoRepository.save(habito.get());
-
-        return ResponseEntity.ok(habitEdited);
+        return soma;
     }
 }

@@ -1,5 +1,8 @@
 package com.habts.routine.habitoHistory;
 
+import com.habts.routine.Kafka.HistoricoRegistradoEvento;
+import com.habts.routine.exception.RecursoExistenteException;
+import com.habts.routine.exception.RecursoNaoEncontradoException;
 import com.habts.routine.habito.Habito;
 import com.habts.routine.habito.HabitoRepository;
 import com.habts.routine.habitoHistory.dtos.DetalhesSave;
@@ -9,6 +12,7 @@ import com.habts.routine.users.Usuario;
 import com.habts.routine.users.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -33,22 +37,39 @@ public class HistoricoService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    public Optional<Historico> save(DetalhesSave dto) {
-        Optional<Habito> habito = habitoRepository.findById(dto.habitoId());
-        if (habito.isEmpty()) return Optional.empty();
+    @Autowired
+    private KafkaTemplate<String, HistoricoRegistradoEvento> kafkaTemplate;
 
-        if (historicoRepository.existsByhabitoIdAndData(habito.get().getId(), LocalDate.now())) {
-            return Optional.empty();
+
+    public Historico save(DetalhesSave dto) {
+        Habito habito = habitoRepository.findById(dto.habitoId()).orElseThrow(() -> new RecursoNaoEncontradoException("Hábito não encontrado"));
+
+        if (historicoRepository.existsByhabitoIdAndData(habito.getId(), LocalDate.now())) {
+           throw new RecursoExistenteException("Historico existente");
         }
 
         Historico newHistorico = new Historico(null,
-                habito.get(),
+                habito,
                 LocalDate.now(),
                 dto.status(),
                 dto.valorAtual(),
-                habito.get().getMeta());
+                habito.getMeta());
 
-        return Optional.of(historicoRepository.save(newHistorico));
+        Historico historicoSalvo = historicoRepository.save(newHistorico);
+
+        Long usuarioId = habito.getUsuario().getId();
+
+        HistoricoRegistradoEvento evento = new HistoricoRegistradoEvento(
+                historicoSalvo.getId(),
+                habito.getId(),
+                usuarioId,
+                historicoSalvo.getData(),
+                historicoSalvo.isStatus()
+        );
+
+        kafkaTemplate.send("historico-registrado", usuarioId.toString(), evento);
+
+        return historicoSalvo;
     }
 
     public List<Historico> listAll() {
@@ -158,8 +179,6 @@ public class HistoricoService {
     }
 
     public int calcularMelhorSequencia(List<Historico> list) {
-
-
         int contador = 0;
         int maiorSequencia = 0;
 
@@ -217,7 +236,7 @@ public class HistoricoService {
 
     public DtoEstatisticaHabito calcularEstatisticas(Long habitoId) {
 
-        Habito habito = habitoRepository.findById(habitoId).orElseThrow(() -> new RuntimeException("Hábito não encontrado"));
+        Habito habito = habitoRepository.findById(habitoId).orElseThrow(() -> new RecursoNaoEncontradoException("Hábito não encontrado"));
         List<Historico> list  = historicoRepository.findByHabitoOrderByDataDesc(habito);
 
         int melhorSequencia = calcularMelhorSequencia(list);
@@ -236,7 +255,7 @@ public class HistoricoService {
 
         var userLogged = authentication.getName();
         Usuario user = usuarioRepository.findByEmail(userLogged)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
 
         LocalDate dataInicio = LocalDate.now().minusMonths(6);
 

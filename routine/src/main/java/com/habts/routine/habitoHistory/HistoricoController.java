@@ -5,6 +5,7 @@ import com.habts.routine.habitoHistory.dtos.DtoAtividade;
 import com.habts.routine.habitoHistory.dtos.DtoEstatisticaHabito;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +26,8 @@ public class HistoricoController {
 
     @PostMapping
     public ResponseEntity<Historico> save(@RequestBody DetalhesSave dto) {
-        return historicoService.save(dto)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.badRequest().build());
+        Historico historico = historicoService.save(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(historico);
     }
 
     @GetMapping

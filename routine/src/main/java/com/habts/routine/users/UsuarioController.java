@@ -30,60 +30,32 @@ public class UsuarioController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private UsuarioService usuarioService;
+
 
     @PostMapping
     public ResponseEntity<DtoResponseUser> createUser(@RequestBody DtoRequestUser usuario) {
-
-        Optional<Usuario> userOptional = usuarioRepository.findByEmail(usuario.email());
-
-        if (userOptional.isPresent()) {
-            throw new RuntimeException("Usuario ja esta cadastrado");
-        }
-
-        Usuario user = new Usuario(null, usuario.nome(), usuario.email(), usuario.telefone(), passwordEncoder.encode(usuario.senha()), usuario.status(), usuario.perfil());
-
-        Usuario savedUser = usuarioRepository.save(user);
-        return  ResponseEntity.status(HttpStatus.CREATED).body(DtoResponseUser.fromEntity(user));
-
+        return usuarioService.createUser(usuario);
     }
 
     @GetMapping("/byId")
     public ResponseEntity<DtoResponseUser> getById(@RequestParam long id) {
-        Optional<Usuario> userOptional = usuarioRepository.findById(id);
-
-        if(userOptional.isEmpty()){
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(DtoResponseUser.fromEntity(userOptional.get()));
-
+        return usuarioService.getById(id);
     }
 
 
     @GetMapping("/me")
     public DtoResponseUser getUsuarioLogado(Authentication authentication) {
-        String email = authentication.getName();
 
-        Usuario user = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        var usuario = new DtoResponseUser(user.getId(), user.getNome(), user.getEmail(), user.getTelefone(), user.getStatus().name(), user.getPerfil().name());
-
-        return usuario;
+        return usuarioService.userLogged(authentication);
     }
 
     @GetMapping
     public Page<DtoResponseUser> getAllUsers(@RequestParam(required = false) StatusUsuario status, Pageable pageable) {
 
-        Page<Usuario> page;
 
-        if(status != null) {
-            page = usuarioRepository.findByStatus(status, pageable);
-        }else{
-            page = usuarioRepository.findAll(pageable);
-        }
-
-        return page.map(DtoResponseUser::fromEntity);
+        return usuarioService.getAll(status, pageable);
     }
 
 
