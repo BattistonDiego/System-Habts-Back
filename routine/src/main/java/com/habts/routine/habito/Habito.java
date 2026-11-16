@@ -1,8 +1,8 @@
 package com.habts.routine.habito;
 
-import com.habts.routine.habito.dtos.DetalhesCadastro;
 import com.habts.routine.users.Usuario;
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "tb_habito")
@@ -16,47 +16,33 @@ public class Habito {
     @JoinColumn(name = "user_id")
     private Usuario usuario;
     private String nome;
-    private Integer meta;
-    private String unidade;
-    private String icone;
-    private String cor;
-    @Column(columnDefinition = "integer default 0")
-    private Integer ordem = 0;
+    private String icon;
+    private String color;
+    private LocalDate dataCriacao;
 
     public Habito() {}
 //Teste CI
-    public Habito(Usuario usuario, String nome, Integer meta, String unidade, String icone, String cor, Integer ordem) {
+    public Habito(Usuario usuario, String nome, String icon, String color) {
         this.usuario = usuario;
         this.nome = nome;
-        this.meta = meta;
-        this.unidade = unidade;
-        this.icone = icone;
-        this.cor = cor;
-        this.ordem = ordem;
+        this.icon = icon;
+        this.color = color;
     }
 
-    public String getUnidade() {
-        return unidade;
+    public String getIcon() {
+        return icon;
     }
 
-    public void setUnidade(String unidade) {
-        this.unidade = unidade;
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 
-    public String getIcone() {
-        return icone;
+    public String getColor() {
+        return color;
     }
 
-    public void setIcone(String icone) {
-        this.icone = icone;
-    }
-
-    public String getCor() {
-        return cor;
-    }
-
-    public void setCor(String cor) {
-        this.cor = cor;
+    public void setColor(String color) {
+        this.color = color;
     }
 
     public Long getId() {
@@ -75,14 +61,6 @@ public class Habito {
         this.nome = nome;
     }
 
-    public Integer getMeta() {
-        return meta;
-    }
-
-    public void setMeta(Integer meta) {
-        this.meta = meta;
-    }
-
     public Usuario getUsuario() {
         return usuario;
     }
@@ -91,11 +69,12 @@ public class Habito {
         this.usuario = usuario;
     }
 
-    public Integer getOrdem() {
-        return ordem;
+    public LocalDate getDataCriacao() {
+        return dataCriacao;
     }
 
-    public void setOrdem(Integer ordem) {
-        this.ordem = ordem;
+    @PrePersist
+    void definirDataCriacao() {
+        if (dataCriacao == null) dataCriacao = LocalDate.now();
     }
 }

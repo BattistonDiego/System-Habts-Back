@@ -10,9 +10,13 @@ import com.habts.routine.habitoHistory.dtos.DtoAtividade;
 import com.habts.routine.habitoHistory.dtos.DtoEstatisticaHabito;
 import com.habts.routine.users.Usuario;
 import com.habts.routine.users.UsuarioRepository;
+import com.habts.routine.Kafka.EventPublisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -27,6 +31,7 @@ import java.util.Optional;
 
 @Service
 public class HistoricoService {
+    private static final Logger log = LoggerFactory.getLogger(HistoricoService.class);
 
     @Autowired
     private HistoricoRepository historicoRepository;
@@ -37,25 +42,28 @@ public class HistoricoService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private KafkaTemplate<String, HistoricoRegistradoEvento> kafkaTemplate;
+    @Autowired(required = false)
+    private EventPublisher eventPublisher;
 
-
+    @Transactional
     public Historico save(DetalhesSave dto) {
         Habito habito = habitoRepository.findById(dto.habitoId()).orElseThrow(() -> new RecursoNaoEncontradoException("Hábito não encontrado"));
 
-        if (historicoRepository.existsByhabitoIdAndData(habito.getId(), LocalDate.now())) {
-           throw new RecursoExistenteException("Historico existente");
+        Optional<Historico> registroExistente = historicoRepository.findByHabito_IdAndData(habito.getId(), LocalDate.now());
+
+        Historico newHistorico;
+        if (registroExistente.isPresent()) {
+            newHistorico = registroExistente.get();
+            if (!dto.concluido() || newHistorico.isConcluido()) {
+                throw new RecursoExistenteException("Historico existente");
+            }
+            newHistorico.setConcluido(true);
+        } else {
+            newHistorico = new Historico(null, habito, LocalDate.now(), dto.concluido());
         }
 
-        Historico newHistorico = new Historico(null,
-                habito,
-                LocalDate.now(),
-                dto.status(),
-                dto.valorAtual(),
-                habito.getMeta());
-
         Historico historicoSalvo = historicoRepository.save(newHistorico);
+        log.info("Histórico salvo com sucesso");
 
         Long usuarioId = habito.getUsuario().getId();
 
@@ -64,10 +72,24 @@ public class HistoricoService {
                 habito.getId(),
                 usuarioId,
                 historicoSalvo.getData(),
-                historicoSalvo.isStatus()
+                historicoSalvo.isConcluido()
         );
 
-        kafkaTemplate.send("historico-registrado", usuarioId.toString(), evento);
+        if (eventPublisher != null) {
+            Runnable publish = () -> eventPublisher.publish(evento);
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        publish.run();
+                    }
+                });
+            } else {
+                publish.run();
+            }
+        } else {
+            log.warn("Kafka indisponível, evento não enviado");
+        }
 
         return historicoSalvo;
     }
@@ -76,14 +98,15 @@ public class HistoricoService {
         return historicoRepository.findAll();
     }
 
-    public List<Historico> listByData(LocalDate date) {
-        if (date == null) return historicoRepository.findAll();
-        return historicoRepository.searchByData(date);
+    public List<HistoricoDataResponse> listByData(LocalDate date) {
+        if (date == null) return historicoRepository.findAllResponses();
+        return historicoRepository.findResponseByData(date);
     }
 
     public int calcularStreak(Long habitoId, String email) {
         List<Historico> registros = historicoRepository
-                .findByHabitoIdAndHabitoUsuarioEmailOrderByDataDesc(habitoId, email);
+                .findByHabito_IdAndHabito_Usuario_EmailOrderByDataDesc(habitoId, email)
+                .stream().filter(Historico::isConcluido).toList();
 
         if (registros.isEmpty()) return 0;
 
@@ -140,13 +163,6 @@ public class HistoricoService {
         int mes = LocalDate.now().getMonthValue();
         int ano = LocalDate.now().getYear();
         return historicoRepository.countByMes(usuarioId, mes, ano);
-    }
-
-    public Double getTaxaMedia(Long usuarioId) {
-        int mes = LocalDate.now().getMonthValue();
-        int ano = LocalDate.now().getYear();
-        Double taxa = historicoRepository.getTaxaMedia(usuarioId, mes, ano);
-        return taxa != null ? taxa : 0.0;
     }
 
     public int calcularSequenciaAtual(List<Historico> list) {
@@ -210,20 +226,6 @@ public class HistoricoService {
         return maiorSequencia;
     }
 
-    public int calcularTaxaConclusao(List<Historico> list) {
-
-        if (list.isEmpty()) {
-            return 0;
-        }
-
-        int totalRegistros = list.size();
-        Historico maisAntigo = list.get(list.size() - 1);
-        Long totalDias = ChronoUnit.DAYS.between(maisAntigo.getData(), LocalDate.now()) + 1;
-
-
-        return totalRegistros * 100 / totalDias.intValue();
-    }
-
     public LocalDate getDataAntiga(List<Historico> list) {
         if (list.isEmpty()) {
             return null;
@@ -237,15 +239,14 @@ public class HistoricoService {
     public DtoEstatisticaHabito calcularEstatisticas(Long habitoId) {
 
         Habito habito = habitoRepository.findById(habitoId).orElseThrow(() -> new RecursoNaoEncontradoException("Hábito não encontrado"));
-        List<Historico> list  = historicoRepository.findByHabitoOrderByDataDesc(habito);
+        List<Historico> list  = historicoRepository.findByHabitoAndConcluidoTrueOrderByDataDesc(habito);
 
         int melhorSequencia = calcularMelhorSequencia(list);
         int sequenciaAtual = calcularSequenciaAtual(list);
-        int taxaConclusao = calcularTaxaConclusao(list);
         LocalDate registroAntigo = getDataAntiga(list);
 
 
-        return new DtoEstatisticaHabito(sequenciaAtual,melhorSequencia,taxaConclusao, registroAntigo, list.size());
+        return new DtoEstatisticaHabito(sequenciaAtual,melhorSequencia, registroAntigo, list.size());
 
     }
 

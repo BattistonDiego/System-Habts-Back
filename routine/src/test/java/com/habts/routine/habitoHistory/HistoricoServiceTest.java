@@ -46,7 +46,7 @@ class HistoricoServiceTest {
     @Test
     void deveLancarExceptionQuandoHabitoNaoExiste() {
         // Arrange
-        DetalhesSave dto = new DetalhesSave(1L, true, 5);
+        DetalhesSave dto = new DetalhesSave(1L, true);
         when(habitoRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Act + Assert
@@ -58,12 +58,12 @@ class HistoricoServiceTest {
     @Test
     void deveLancarExceptionQuandoHabitoExistirNoHistorico() {
         // Arrange
-        DetalhesSave dto = new DetalhesSave(1L, true, 5);
-        Habito habitoFake = new Habito(null, "Beber água", 8, "copos", "icone", "azul", 1);
+        DetalhesSave dto = new DetalhesSave(1L, true);
+        Habito habitoFake = new Habito(null, "Beber água", "icone", "azul");
 
 
         when(habitoRepository.findById(1L)).thenReturn(Optional.of(habitoFake));
-        when(historicoRepository.existsByhabitoIdAndData(any(), any())).thenReturn(true);
+        when(historicoRepository.existsByHabito_IdAndData(any(), any())).thenReturn(true);
 
 
 
@@ -76,12 +76,12 @@ class HistoricoServiceTest {
     @Test
     void deveSalvarOHabitoNoHistorico() {
         // Arrange
-        DetalhesSave dto = new DetalhesSave(1L, true, 5);
-        Habito habitoFake = new Habito(null, "Beber água", 8, "copos", "icone", "azul", 1);
-        Historico historicoFake = new Historico(1L, habitoFake, LocalDate.now(), true, 5, 8);
+        DetalhesSave dto = new DetalhesSave(1L, true);
+        Habito habitoFake = new Habito(null, "Beber água", "icone", "azul");
+        Historico historicoFake = new Historico(1L, habitoFake, LocalDate.now(), true);
 
         when(habitoRepository.findById(1L)).thenReturn(Optional.of(habitoFake));
-        when(historicoRepository.existsByhabitoIdAndData(any(), any())).thenReturn(false);
+        when(historicoRepository.existsByHabito_IdAndData(any(), any())).thenReturn(false);
         when(historicoRepository.save(any())).thenReturn(historicoFake);
 
         // Act
@@ -102,12 +102,12 @@ class HistoricoServiceTest {
 
     @Test
     void deveRetornarEstatisticasQuandoHabitoExistir() {
-        Habito habitoFake = new Habito(null, "Beber água", 8, "copos", "icone", "azul", 1);
+        Habito habitoFake = new Habito(null, "Beber água", "icone", "azul");
 
         List<Historico> historicoList = List.of(
-                new Historico(1L, habitoFake, LocalDate.now(), true, 8, 8),
-                new Historico(2L, habitoFake, LocalDate.now().minusDays(1), true, 8, 8),
-                new Historico(3L, habitoFake, LocalDate.now().minusDays(2), true, 8, 8)
+                new Historico(1L, habitoFake, LocalDate.now(), true),
+                new Historico(2L, habitoFake, LocalDate.now().minusDays(1), true),
+                new Historico(3L, habitoFake, LocalDate.now().minusDays(2), true)
         );
 
         when(habitoRepository.findById(1L)).thenReturn(Optional.of(habitoFake));
@@ -170,12 +170,12 @@ class HistoricoServiceTest {
 
     @Test
     void deveCalcularSequenciaAtual() {
-        Habito habitoFake = new Habito(null, "Beber água", 8, "copos", "icone", "azul", 1);
+        Habito habitoFake = new Habito(null, "Beber água", "icone", "azul");
 
         List<Historico> historicoList = List.of(
-                new Historico(1L, habitoFake, LocalDate.now(), true, 8, 8),
-                new Historico(2L, habitoFake, LocalDate.now().minusDays(1), true, 8, 8),
-                new Historico(3L, habitoFake, LocalDate.now().minusDays(2), true, 8, 8)
+                new Historico(1L, habitoFake, LocalDate.now(), true),
+                new Historico(2L, habitoFake, LocalDate.now().minusDays(1), true),
+                new Historico(3L, habitoFake, LocalDate.now().minusDays(2), true)
         );
 
         int resultado = historicoService.calcularSequenciaAtual(historicoList);
@@ -186,11 +186,11 @@ class HistoricoServiceTest {
 
     @Test
     void deveRetornarUmQuandoSequenciaEstiverQuebrada() {
-        Habito habitoFake = new Habito(null, "Beber água", 8, "copos", "icone", "azul", 1);
+        Habito habitoFake = new Habito(null, "Beber água", "icone", "azul");
 
         List<Historico> historicoQuebrado = List.of(
-                new Historico(1L, habitoFake, LocalDate.now(), true, 8, 8),
-                new Historico(2L, habitoFake, LocalDate.now().minusDays(3), true, 8, 8) // pulo de 3 dias
+                new Historico(1L, habitoFake, LocalDate.now(), true),
+                new Historico(2L, habitoFake, LocalDate.now().minusDays(3), true) // pulo de 3 dias
         );
 
         int resultado = historicoService.calcularSequenciaAtual(historicoQuebrado);
@@ -201,37 +201,21 @@ class HistoricoServiceTest {
 
     @Test
     void deveCalcularMelhorSequencia() {
-        Habito habitoFake = new Habito(null, "Beber água", 8, "copos", "icone", "azul", 1);
+        Habito habitoFake = new Habito(null, "Beber água", "icone", "azul");
 
         List<Historico> historicoMisto = List.of(
-                new Historico(1L, habitoFake, LocalDate.now(), true, 8, 8),                  // hoje
-                new Historico(2L, habitoFake, LocalDate.now().minusDays(1), true, 8, 8),     // ontem
+                new Historico(1L, habitoFake, LocalDate.now(), true),                  // hoje
+                new Historico(2L, habitoFake, LocalDate.now().minusDays(1), true),     // ontem
                 // --- quebra aqui ---
-                new Historico(3L, habitoFake, LocalDate.now().minusDays(5), true, 8, 8),
-                new Historico(4L, habitoFake, LocalDate.now().minusDays(6), true, 8, 8),
-                new Historico(5L, habitoFake, LocalDate.now().minusDays(7), true, 8, 8),
-                new Historico(6L, habitoFake, LocalDate.now().minusDays(8), true, 8, 8)
+                new Historico(3L, habitoFake, LocalDate.now().minusDays(5), true),
+                new Historico(4L, habitoFake, LocalDate.now().minusDays(6), true),
+                new Historico(5L, habitoFake, LocalDate.now().minusDays(7), true),
+                new Historico(6L, habitoFake, LocalDate.now().minusDays(8), true)
         );
 
         int resultado = historicoService.calcularMelhorSequencia(historicoMisto);
 
         assertEquals(4, resultado);
-
-    }
-
-    @Test
-    void deveCalcularTaxaConclusao() {
-        Habito habitoFake = new Habito(null, "Beber água", 8, "copos", "icone", "azul", 1);
-
-        List<Historico> historicoList = List.of(
-                new Historico(1L, habitoFake, LocalDate.now(), true, 8, 8),
-                new Historico(2L, habitoFake, LocalDate.now().minusDays(1), true, 8, 8),
-                new Historico(3L, habitoFake, LocalDate.now().minusDays(2), true, 8, 8)
-        );
-
-        int resultado = historicoService.calcularTaxaConclusao(historicoList);
-
-        assertEquals(100, resultado);
 
     }
 

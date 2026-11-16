@@ -36,7 +36,7 @@ public class HistoricoController {
     }
 
     @GetMapping("/data")
-    public ResponseEntity<List<Historico>> listByData(@RequestParam(required = false) LocalDate date) {
+    public ResponseEntity<List<HistoricoDataResponse>> listByData(@RequestParam(required = false) LocalDate date) {
         return ResponseEntity.ok(historicoService.listByData(date));
     }
 
@@ -59,11 +59,6 @@ public class HistoricoController {
     @GetMapping("/este-mes/{usuarioId}")
     public Long getEsteMes(@PathVariable Long usuarioId) {
         return historicoService.getEsteMes(usuarioId);
-    }
-
-    @GetMapping("/taxa-media/{usuarioId}")
-    public Double getTaxaMedia(@PathVariable Long usuarioId) {
-        return historicoService.getTaxaMedia(usuarioId);
     }
 
     @GetMapping("/{habitoId}/estatisticas")

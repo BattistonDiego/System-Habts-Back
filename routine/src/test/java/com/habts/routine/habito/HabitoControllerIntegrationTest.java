@@ -40,7 +40,7 @@ public class HabitoControllerIntegrationTest {
     void deveCriarUmHabitoComSucesso() throws Exception {
         Usuario usuarioExistente = new Usuario(null, "Diego", "diego.testeSenha@email.com", "555855280", passwordEncoder.encode("senha123"), StatusUsuario.ATIVO, PerfilUsuario.ADMINISTRADOR);
         usuarioRepository.save(usuarioExistente);
-        DetalhesCadastro dto = new DetalhesCadastro(1L,"Estudar", 1, "Ao dia", "#teste", "#FFF");
+        DetalhesCadastro dto = new DetalhesCadastro(1L,"Estudar", "#teste", "#FFF");
 
         String json = objectMapper.writeValueAsString(dto);
 

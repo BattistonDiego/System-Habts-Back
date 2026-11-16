@@ -6,9 +6,6 @@ import java.util.List;
 
 public interface HabitoRepository extends JpaRepository<Habito, Long> {
 
-    List<Habito> findByUsuarioIdOrderByOrdemAsc(Long id);
-
-    int countByUsuarioId(Long usuarioId);
-
+    List<Habito> findByUsuarioId(Long id);
 
 }

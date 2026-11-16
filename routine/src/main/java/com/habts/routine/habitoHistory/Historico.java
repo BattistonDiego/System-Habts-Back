@@ -2,6 +2,7 @@ package com.habts.routine.habitoHistory;
 
 import com.habts.routine.habito.Habito;
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDate;
 
@@ -17,17 +18,13 @@ public class Historico {
     @JoinColumn(name = "habito_id")
     private Habito  habito;
     private LocalDate data;
-    private boolean status;
-    private Integer valorAtual;
-    private Integer meta;
+    private boolean concluido;
 
-    public Historico(Long id, Habito habito, LocalDate data, boolean status, Integer valorAtual, Integer meta) {
+    public Historico(Long id, Habito habito, LocalDate data, boolean concluido) {
         this.id = id;
         this.habito = habito;
         this.data = data;
-        this.status = status;
-        this.valorAtual = valorAtual;
-        this.meta = meta;
+        this.concluido = concluido;
     }
 
     public Historico() {}
@@ -40,6 +37,7 @@ public class Historico {
         this.id = id;
     }
 
+    @JsonIgnore
     public Habito getHabito() {
         return habito;
     }
@@ -56,29 +54,15 @@ public class Historico {
         this.data = data;
     }
 
-    public boolean isStatus() {
-        return status;
+    public Long getHabitoId() {
+        return habito == null ? null : habito.getId();
     }
 
-    public void setStatus(boolean status) {
-        this.status = status;
+    public boolean isConcluido() {
+        return concluido;
     }
 
-    public Integer getValorAtual() {
-        return valorAtual;
-    }
-
-    public void setValorAtual(Integer valorAtual) {
-        this.valorAtual = valorAtual;
-    }
-
-    public Integer getMeta() {
-        return meta;
-    }
-
-    public void setMeta(Integer meta) {
-        this.meta = meta;
-    }
+    public void setConcluido(boolean concluido) { this.concluido = concluido; }
 
 
 }

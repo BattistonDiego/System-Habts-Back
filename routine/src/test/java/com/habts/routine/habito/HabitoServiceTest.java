@@ -28,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import java.util.List;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mock;
 
@@ -61,11 +62,8 @@ public class HabitoServiceTest {
         Habito habito = new Habito(
                 usuario,
                 "Beber água",
-                8,
-                "copos",
                 "💧",
-                "#2196F3",
-                0
+                "#2196F3"
         );
         when(habitoRepository.findById(1L)).thenReturn(Optional.of(habito));
 
@@ -73,7 +71,7 @@ public class HabitoServiceTest {
         ResponseEntity response = habitoService.deleteHabito(id);
 
         // Assert
-        verify(historicoRepository, times(1)).deleteByHabitoId(id);
+        verify(historicoRepository, times(1)).deleteByHabito_Id(id);
         verify(habitoRepository, times(1)).deleteById(id);
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
@@ -96,28 +94,22 @@ public class HabitoServiceTest {
         DetalhesCadastro dto = new DetalhesCadastro(
                 1L,             // usuarioId
                 "Beber água",   // nome
-                8,              // meta
-                "copos",        // unidade
-                "💧",           // icone
-                "#2196F3"       // cor
+                "💧",           // icon
+                "#2196F3"       // color
         );
         Habito habitoFake = new Habito(
                 usuario,
                 dto.nome(),
-                dto.meta(),
-                dto.unidade(),
-                dto.icone(),
-                dto.cor(),
-                1
+                dto.icon(),
+                dto.color()
         );
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
-        when(habitoRepository.countByUsuarioId(usuario.getId())).thenReturn(1);
         when(habitoRepository.save(any(Habito.class))).thenReturn(habitoFake);
 
         ResponseEntity<DtoResponse> response = habitoService.createHabito(dto);
 
         assertEquals("Beber água", response.getBody().nomeHabito());
-        assertEquals(8, response.getBody().meta());
+        assertEquals("💧", response.getBody().icon());
 
     }
 
@@ -127,10 +119,8 @@ public class HabitoServiceTest {
         DetalhesCadastro dto = new DetalhesCadastro(
                 id,             // usuarioId
                 "Beber água",   // nome
-                8,              // meta
-                "copos",        // unidade
-                "💧",           // icone
-                "#2196F3"       // cor
+                "💧",           // icon
+                "#2196F3"       // color
         );
 
 
@@ -148,10 +138,8 @@ public class HabitoServiceTest {
         DetalhesCadastro dto = new DetalhesCadastro(
                 id,             // usuarioId
                 "Teste",   // nome
-                8,              // meta
-                "copos",        // unidade
-                "💧",           // icone
-                "#2196F3"       // cor
+                "💧",           // icon
+                "#2196F3"       // color
         );
 
         Usuario usuario = new Usuario(1L, "Diego", "diego@email.com", "11999999999", "Testes", StatusUsuario.ATIVO, PerfilUsuario.USUARIO);
@@ -159,11 +147,8 @@ public class HabitoServiceTest {
         Habito habito = new Habito(
                 usuario,
                 "Beber água",
-                8,
-                "copos",
                 "💧",
-                "#2196F3",
-                0
+                "#2196F3"
         );
 
 
@@ -174,6 +159,11 @@ public class HabitoServiceTest {
         ResponseEntity<Habito> resultado = habitoService.editarHabito(id, dto);
 
         assertEquals(dto.nome(), resultado.getBody().getNome());
+        assertEquals(dto.icon(), resultado.getBody().getIcon());
+        assertEquals(dto.color(), resultado.getBody().getColor());
+        assertSame(usuario, resultado.getBody().getUsuario());
+        // Updating habit metadata must not query, create, or delete daily completion history.
+        verifyNoInteractions(historicoRepository);
     }
 
     @Test
@@ -182,10 +172,8 @@ public class HabitoServiceTest {
         DetalhesCadastro dto = new DetalhesCadastro(
                 id,             // usuarioId
                 "Teste",   // nome
-                8,              // meta
-                "copos",        // unidade
-                "💧",           // icone
-                "#2196F3"       // cor
+                "💧",           // icon
+                "#2196F3"       // color
         );
 
 
@@ -205,10 +193,10 @@ public class HabitoServiceTest {
         SecurityContext securityContext = mock(SecurityContext.class);
         Usuario usuario = new Usuario(null, "usuario@teste.com", "12345678" );
 
-        Habito habito1 = new Habito(usuario, "Beber água", 8, "copos", "💧", "#2196F3", 0);
+        Habito habito1 = new Habito(usuario, "Beber água", "💧", "#2196F3");
         habito1.setId(1L);
 
-        Habito habito2 = new Habito(usuario, "Ler", 30, "minutos", "📖", "#4CAF50", 1);
+        Habito habito2 = new Habito(usuario, "Ler", "📖", "#4CAF50");
         habito2.setId(2L);
 
         List<Habito> listaHabitos = List.of(habito1, habito2);
@@ -219,7 +207,7 @@ public class HabitoServiceTest {
         SecurityContextHolder.setContext(securityContext);
 
         when(usuarioRepository.findByEmail("usuario@teste.com")).thenReturn(Optional.of(usuario));
-        when(habitoRepository.findByUsuarioIdOrderByOrdemAsc(usuario.getId())).thenReturn(listaHabitos);
+        when(habitoRepository.findByUsuarioId(usuario.getId())).thenReturn(listaHabitos);
 
         ResponseEntity<List<HabitoResponse>> resultado = habitoService.listAllHabito();
 
