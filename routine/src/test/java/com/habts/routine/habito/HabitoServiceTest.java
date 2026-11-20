@@ -63,7 +63,8 @@ public class HabitoServiceTest {
                 usuario,
                 "Beber água",
                 "💧",
-                "#2196F3"
+                "#2196F3",
+                "Descrição do hábito"
         );
         when(habitoRepository.findById(1L)).thenReturn(Optional.of(habito));
 
@@ -95,13 +96,15 @@ public class HabitoServiceTest {
                 1L,             // usuarioId
                 "Beber água",   // nome
                 "💧",           // icon
-                "#2196F3"       // color
+                "#2196F3",      // color
+                "Beber mais água" // descricao
         );
         Habito habitoFake = new Habito(
                 usuario,
                 dto.nome(),
                 dto.icon(),
-                dto.color()
+                dto.color(),
+                dto.descricao()
         );
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
         when(habitoRepository.save(any(Habito.class))).thenReturn(habitoFake);
@@ -110,6 +113,7 @@ public class HabitoServiceTest {
 
         assertEquals("Beber água", response.getBody().nomeHabito());
         assertEquals("💧", response.getBody().icon());
+        assertEquals("Beber mais água", response.getBody().descricao());
 
     }
 
@@ -120,7 +124,8 @@ public class HabitoServiceTest {
                 id,             // usuarioId
                 "Beber água",   // nome
                 "💧",           // icon
-                "#2196F3"       // color
+                "#2196F3",      // color
+                "Descrição do hábito" // descricao
         );
 
 
@@ -139,7 +144,8 @@ public class HabitoServiceTest {
                 id,             // usuarioId
                 "Teste",   // nome
                 "💧",           // icon
-                "#2196F3"       // color
+                "#2196F3",      // color
+                "Descrição atualizada" // descricao
         );
 
         Usuario usuario = new Usuario(1L, "Diego", "diego@email.com", "11999999999", "Testes", StatusUsuario.ATIVO, PerfilUsuario.USUARIO);
@@ -148,7 +154,8 @@ public class HabitoServiceTest {
                 usuario,
                 "Beber água",
                 "💧",
-                "#2196F3"
+                "#2196F3",
+                "Descrição anterior"
         );
 
 
@@ -161,6 +168,7 @@ public class HabitoServiceTest {
         assertEquals(dto.nome(), resultado.getBody().getNome());
         assertEquals(dto.icon(), resultado.getBody().getIcon());
         assertEquals(dto.color(), resultado.getBody().getColor());
+        assertEquals(dto.descricao(), resultado.getBody().getDescricao());
         assertSame(usuario, resultado.getBody().getUsuario());
         // Updating habit metadata must not query, create, or delete daily completion history.
         verifyNoInteractions(historicoRepository);
@@ -173,7 +181,8 @@ public class HabitoServiceTest {
                 id,             // usuarioId
                 "Teste",   // nome
                 "💧",           // icon
-                "#2196F3"       // color
+                "#2196F3",      // color
+                "Descrição do hábito" // descricao
         );
 
 
@@ -193,10 +202,10 @@ public class HabitoServiceTest {
         SecurityContext securityContext = mock(SecurityContext.class);
         Usuario usuario = new Usuario(null, "usuario@teste.com", "12345678" );
 
-        Habito habito1 = new Habito(usuario, "Beber água", "💧", "#2196F3");
+        Habito habito1 = new Habito(usuario, "Beber água", "💧", "#2196F3", "Tomar água diariamente");
         habito1.setId(1L);
 
-        Habito habito2 = new Habito(usuario, "Ler", "📖", "#4CAF50");
+        Habito habito2 = new Habito(usuario, "Ler", "📖", "#4CAF50", "Ler um pouco todos os dias");
         habito2.setId(2L);
 
         List<Habito> listaHabitos = List.of(habito1, habito2);

@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,9 +40,10 @@ public class HabitoControllerIntegrationTest {
 
     @Test
     void deveCriarUmHabitoComSucesso() throws Exception {
-        Usuario usuarioExistente = new Usuario(null, "Diego", "diego.testeSenha@email.com", "555855280", passwordEncoder.encode("senha123"), StatusUsuario.ATIVO, PerfilUsuario.ADMINISTRADOR);
-        usuarioRepository.save(usuarioExistente);
-        DetalhesCadastro dto = new DetalhesCadastro(1L,"Estudar", "#teste", "#FFF");
+        String emailUnico = "diego.testeSenha+" + UUID.randomUUID() + "@email.com";
+        Usuario usuarioExistente = new Usuario(null, "Diego", emailUnico, "555855280", passwordEncoder.encode("senha123"), StatusUsuario.ATIVO, PerfilUsuario.ADMINISTRADOR);
+        usuarioExistente = usuarioRepository.save(usuarioExistente);
+        DetalhesCadastro dto = new DetalhesCadastro(usuarioExistente.getId(), "Estudar", "#teste", "#FFF", "Estudar todos os dias");
 
         String json = objectMapper.writeValueAsString(dto);
 
@@ -48,7 +51,8 @@ public class HabitoControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nomeHabito").value("Estudar"));
+                .andExpect(jsonPath("$.nomeHabito").value("Estudar"))
+                .andExpect(jsonPath("$.descricao").value("Estudar todos os dias"));
 
     }
 }
