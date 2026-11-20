@@ -19,14 +19,16 @@ public class Habito {
     private String icon;
     private String color;
     private LocalDate dataCriacao;
+    private String descricao;
 
     public Habito() {}
 //Teste CI
-    public Habito(Usuario usuario, String nome, String icon, String color) {
+    public Habito(Usuario usuario, String nome, String icon, String color, String descricao) {
         this.usuario = usuario;
         this.nome = nome;
         this.icon = icon;
         this.color = color;
+        this.descricao = descricao;
     }
 
     public String getIcon() {
@@ -35,6 +37,14 @@ public class Habito {
 
     public void setIcon(String icon) {
         this.icon = icon;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
     }
 
     public String getColor() {

@@ -10,5 +10,6 @@ public record DetalhesCadastro(
         Long usuarioId,
         String nome,
         String icon,
-        String color) {
+        String color,
+        String descricao) {
 }

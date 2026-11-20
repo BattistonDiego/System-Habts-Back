@@ -31,7 +31,7 @@ public class HabitoService {
     public ResponseEntity<DtoResponse> createHabito(DetalhesCadastro dto){
         Usuario usuario = usuarioRepository.findById(dto.usuarioId()).orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
 
-        var newHabito = new Habito(usuario, dto.nome(), dto.icon(), dto.color());
+        var newHabito = new Habito(usuario, dto.nome(), dto.icon(), dto.color(), dto.descricao());
         habitoRepository.save(newHabito);
 
 
@@ -45,7 +45,7 @@ public class HabitoService {
         Usuario user = usuarioRepository.findByEmail(userLogged)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
 
-        var listHabitos = habitoRepository.findByUsuarioId(user.getId()).stream().map(h -> new HabitoResponse(h.getId(), h.getNome(), h.getIcon(), h.getColor())).toList();
+        var listHabitos = habitoRepository.findByUsuarioId(user.getId()).stream().map(h -> new HabitoResponse(h.getId(), h.getNome(), h.getIcon(), h.getColor(), h.getDescricao())).toList();
 
         return ResponseEntity.ok(listHabitos);
     }
@@ -71,6 +71,10 @@ public class HabitoService {
         }
         if (dto.color() != null){
             habito.setColor(dto.color());
+        }
+
+        if (dto.descricao() != null){
+            habito.setDescricao(dto.descricao());
         }
 
         var habitEdited = habitoRepository.save(habito);
