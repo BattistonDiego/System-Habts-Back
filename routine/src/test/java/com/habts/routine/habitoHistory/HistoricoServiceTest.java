@@ -64,8 +64,8 @@ class HistoricoServiceTest {
         SecurityContextHolder.setContext(securityContext);
     }
 
-    private Habito habitoComId(Long id, String nome, String descricao, String cor, String icone) {
-        Habito habito = new Habito(null, nome, icone, cor, descricao);
+    private Habito habitoComId(Long id, String nome, String descricao, String color, String icon) {
+        Habito habito = new Habito(null, nome, icon, color, descricao);
         habito.setId(id);
         return habito;
     }
@@ -77,9 +77,10 @@ class HistoricoServiceTest {
         autenticarComo("usuario@teste.com");
 
         when(usuarioRepository.findByEmail("usuario@teste.com")).thenReturn(Optional.of(usuario));
-        when(habitoRepository.findByUsuarioId(7L)).thenReturn(List.of(
-                habitoComId(2L, "Beber água", "Beber 2 litros de água", "#22d3ee", "assets/svg/icon-water.svg"),
-                habitoComId(1L, "Estudar Java", "Estudar Java por 1 hora", "#3b82f6", "assets/svg/icon-code.svg")
+        // O repositório já devolve em ordem de id (findByUsuarioIdOrderByIdAsc).
+        when(habitoRepository.findByUsuarioIdOrderByIdAsc(7L)).thenReturn(List.of(
+                habitoComId(1L, "Estudar Java", "Estudar Java por 1 hora", "#3b82f6", "code"),
+                habitoComId(2L, "Beber água", "Beber 2 litros de água", "#22d3ee", "water")
         ));
         List<DtoConclusaoMes> conclusoes = List.of(
                 new DtoConclusaoMes(1L, mesPassado.atDay(3)),
@@ -94,9 +95,10 @@ class HistoricoServiceTest {
         assertEquals(mesPassado.getMonthValue(), resultado.mes());
         assertEquals(2, resultado.habitos().size());
         assertEquals(1L, resultado.habitos().get(0).id());
-        assertEquals("Estudar Java por 1 hora", resultado.habitos().get(0).meta());
-        assertEquals("#3b82f6", resultado.habitos().get(0).cor());
-        assertEquals("assets/svg/icon-code.svg", resultado.habitos().get(0).icone());
+        assertEquals("Estudar Java por 1 hora", resultado.habitos().get(0).descricao());
+        assertEquals("#3b82f6", resultado.habitos().get(0).color());
+        assertEquals("code", resultado.habitos().get(0).icon());
+        assertEquals(2L, resultado.habitos().get(1).id());
         assertEquals(conclusoes, resultado.conclusoes());
     }
 
@@ -143,7 +145,7 @@ class HistoricoServiceTest {
     void deveLancarExceptionQuandoHabitoExistirNoHistorico() {
         // Arrange
         DetalhesSave dto = new DetalhesSave(1L, true);
-        Habito habitoFake = new Habito(null, "Beber água", "icone", "azul", "Descrição do hábito");
+        Habito habitoFake = new Habito(null, "Beber água", "water", "#3b82f6", "Descrição do hábito");
 
 
         when(habitoRepository.findById(1L)).thenReturn(Optional.of(habitoFake));
@@ -162,7 +164,7 @@ class HistoricoServiceTest {
     void deveSalvarOHabitoNoHistorico() {
         // Arrange
         DetalhesSave dto = new DetalhesSave(1L, true);
-        Habito habitoFake = new Habito(null, "Beber água", "icone", "azul", "Descrição do hábito");
+        Habito habitoFake = new Habito(null, "Beber água", "water", "#3b82f6", "Descrição do hábito");
         Historico historicoFake = new Historico(1L, habitoFake, LocalDate.now(), true);
 
         when(habitoRepository.findById(1L)).thenReturn(Optional.of(habitoFake));
@@ -188,7 +190,7 @@ class HistoricoServiceTest {
     @Test
     @Disabled("Esperava 3 e recebe 0; conferir se o stub findByHabitoOrderByDataDesc ainda é o método usado pelo service")
     void deveRetornarEstatisticasQuandoHabitoExistir() {
-        Habito habitoFake = new Habito(null, "Beber água", "icone", "azul", "Descrição do hábito");
+        Habito habitoFake = new Habito(null, "Beber água", "water", "#3b82f6", "Descrição do hábito");
 
         List<Historico> historicoList = List.of(
                 new Historico(1L, habitoFake, LocalDate.now(), true),
@@ -256,7 +258,7 @@ class HistoricoServiceTest {
 
     @Test
     void deveCalcularSequenciaAtual() {
-        Habito habitoFake = new Habito(null, "Beber água", "icone", "azul", "Descrição do hábito");
+        Habito habitoFake = new Habito(null, "Beber água", "water", "#3b82f6", "Descrição do hábito");
 
         List<Historico> historicoList = List.of(
                 new Historico(1L, habitoFake, LocalDate.now(), true),
@@ -272,7 +274,7 @@ class HistoricoServiceTest {
 
     @Test
     void deveRetornarUmQuandoSequenciaEstiverQuebrada() {
-        Habito habitoFake = new Habito(null, "Beber água", "icone", "azul", "Descrição do hábito");
+        Habito habitoFake = new Habito(null, "Beber água", "water", "#3b82f6", "Descrição do hábito");
 
         List<Historico> historicoQuebrado = List.of(
                 new Historico(1L, habitoFake, LocalDate.now(), true),
@@ -287,7 +289,7 @@ class HistoricoServiceTest {
 
     @Test
     void deveCalcularMelhorSequencia() {
-        Habito habitoFake = new Habito(null, "Beber água", "icone", "azul", "Descrição do hábito");
+        Habito habitoFake = new Habito(null, "Beber água", "water", "#3b82f6", "Descrição do hábito");
 
         List<Historico> historicoMisto = List.of(
                 new Historico(1L, habitoFake, LocalDate.now(), true),                  // hoje

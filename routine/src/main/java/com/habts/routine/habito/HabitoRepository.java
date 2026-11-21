@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface HabitoRepository extends JpaRepository<Habito, Long> {
 
-    List<Habito> findByUsuarioId(Long id);
+    /** Hábitos do usuário em ordem estável (id crescente = ordem de criação). */
+    List<Habito> findByUsuarioIdOrderByIdAsc(Long usuarioId);
 
 }

@@ -45,7 +45,7 @@ public class HabitoService {
         Usuario user = usuarioRepository.findByEmail(userLogged)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
 
-        var listHabitos = habitoRepository.findByUsuarioId(user.getId()).stream().map(h -> new HabitoResponse(h.getId(), h.getNome(), h.getIcon(), h.getColor(), h.getDescricao())).toList();
+        var listHabitos = habitoRepository.findByUsuarioIdOrderByIdAsc(user.getId()).stream().map(h -> new HabitoResponse(h.getId(), h.getNome(), h.getIcon(), h.getColor(), h.getDescricao())).toList();
 
         return ResponseEntity.ok(listHabitos);
     }
