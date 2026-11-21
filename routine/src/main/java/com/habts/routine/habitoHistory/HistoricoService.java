@@ -6,8 +6,12 @@ import com.habts.routine.exception.RecursoNaoEncontradoException;
 import com.habts.routine.habito.Habito;
 import com.habts.routine.habito.HabitoRepository;
 import com.habts.routine.habitoHistory.dtos.DetalhesSave;
+import com.habts.routine.exception.RequisicaoInvalidaException;
 import com.habts.routine.habitoHistory.dtos.DtoAtividade;
+import com.habts.routine.habitoHistory.dtos.DtoCalendarioMes;
+import com.habts.routine.habitoHistory.dtos.DtoConclusaoMes;
 import com.habts.routine.habitoHistory.dtos.DtoEstatisticaHabito;
+import com.habts.routine.habitoHistory.dtos.DtoHabitoMes;
 import com.habts.routine.users.Usuario;
 import com.habts.routine.users.UsuarioRepository;
 import com.habts.routine.Kafka.EventPublisher;
@@ -23,7 +27,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -261,6 +267,31 @@ public class HistoricoService {
         LocalDate dataInicio = LocalDate.now().minusMonths(6);
 
         return historicoRepository.buscarAtividade(user.getId(),dataInicio);
+    }
+
+    public DtoCalendarioMes buscarMes(int ano, int mes) {
+        if (mes < 1 || mes > 12) {
+            throw new RequisicaoInvalidaException("Mês inválido: deve estar entre 1 e 12");
+        }
+
+        YearMonth periodo = YearMonth.of(ano, mes);
+        if (periodo.isAfter(YearMonth.now())) {
+            throw new RequisicaoInvalidaException("Não é possível consultar meses futuros");
+        }
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Usuario user = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
+
+        List<DtoHabitoMes> habitos = habitoRepository.findByUsuarioId(user.getId()).stream()
+                .sorted(Comparator.comparing(Habito::getId))
+                .map(h -> new DtoHabitoMes(h.getId(), h.getNome(), h.getDescricao(), h.getColor(), h.getIcon()))
+                .toList();
+
+        List<DtoConclusaoMes> conclusoes = historicoRepository.buscarConclusoesNoPeriodo(
+                user.getId(), periodo.atDay(1), periodo.atEndOfMonth());
+
+        return new DtoCalendarioMes(ano, mes, habitos, conclusoes);
     }
 
 

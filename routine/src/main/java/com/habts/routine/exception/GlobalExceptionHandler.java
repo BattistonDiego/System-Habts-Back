@@ -20,6 +20,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
     }
 
+    @ExceptionHandler(RequisicaoInvalidaException.class)
+    public ResponseEntity<ErroResponse> handleRequisicaoInvalida(RequisicaoInvalidaException ex) {
+        ErroResponse erro = new ErroResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErroResponse> handleGenerico(Exception ex) {
         ErroResponse erro = new ErroResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Erro interno no servidor");

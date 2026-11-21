@@ -2,6 +2,7 @@ package com.habts.routine.habitoHistory;
 import com.habts.routine.habito.Habito;
 import com.habts.routine.habitoHistory.dtos.DetalhesSave;
 import com.habts.routine.habitoHistory.dtos.DtoAtividade;
+import com.habts.routine.habitoHistory.dtos.DtoCalendarioMes;
 import com.habts.routine.habitoHistory.dtos.DtoEstatisticaHabito;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,11 @@ public class HistoricoController {
     @GetMapping("/{habitoId}/estatisticas")
     public DtoEstatisticaHabito getEstatisticas(@PathVariable Long habitoId){
         return historicoService.calcularEstatisticas(habitoId);
+    }
+
+    @GetMapping("/mes")
+    public DtoCalendarioMes buscarMes(@RequestParam int ano, @RequestParam int mes) {
+        return historicoService.buscarMes(ano, mes);
     }
 
     @GetMapping("/atividade")

@@ -2,6 +2,7 @@ package com.habts.routine.habitoHistory;
 
 import com.habts.routine.habito.Habito;
 import com.habts.routine.habitoHistory.dtos.DtoAtividade;
+import com.habts.routine.habitoHistory.dtos.DtoConclusaoMes;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -80,6 +81,16 @@ public interface HistoricoRepository extends JpaRepository<Historico,Long> {
             "ORDER BY h.data DESC")
     List<DtoAtividade> buscarAtividade(@Param("usuarioId") Long usuarioId,
                                        @Param("dataInicio") LocalDate dataInicio);
+
+    @Query("SELECT DISTINCT new com.habts.routine.habitoHistory.dtos.DtoConclusaoMes(h.habito.id, h.data) " +
+            "FROM Historico h " +
+            "WHERE h.habito.usuario.id = :usuarioId " +
+            "AND h.concluido = true " +
+            "AND h.data BETWEEN :inicio AND :fim " +
+            "ORDER BY h.data ASC")
+    List<DtoConclusaoMes> buscarConclusoesNoPeriodo(@Param("usuarioId") Long usuarioId,
+                                                    @Param("inicio") LocalDate inicio,
+                                                    @Param("fim") LocalDate fim);
 
 
 }

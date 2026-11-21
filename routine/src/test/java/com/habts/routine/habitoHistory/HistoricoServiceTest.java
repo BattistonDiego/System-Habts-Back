@@ -19,7 +19,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.habts.routine.exception.RequisicaoInvalidaException;
+import com.habts.routine.habitoHistory.dtos.DtoCalendarioMes;
+import com.habts.routine.habitoHistory.dtos.DtoConclusaoMes;
+import org.junit.jupiter.api.AfterEach;
+
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +50,81 @@ class HistoricoServiceTest {
 
     @InjectMocks
     private HistoricoService historicoService;
+
+    @AfterEach
+    void limparContextoDeSeguranca() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private void autenticarComo(String email) {
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getName()).thenReturn(email);
+        SecurityContextHolder.setContext(securityContext);
+    }
+
+    private Habito habitoComId(Long id, String nome, String descricao, String cor, String icone) {
+        Habito habito = new Habito(null, nome, icone, cor, descricao);
+        habito.setId(id);
+        return habito;
+    }
+
+    @Test
+    void deveRetornarHabitosEConclusoesDoMes() {
+        YearMonth mesPassado = YearMonth.now().minusMonths(1);
+        Usuario usuario = new Usuario(7L, "usuario@teste.com", "12345678");
+        autenticarComo("usuario@teste.com");
+
+        when(usuarioRepository.findByEmail("usuario@teste.com")).thenReturn(Optional.of(usuario));
+        when(habitoRepository.findByUsuarioId(7L)).thenReturn(List.of(
+                habitoComId(2L, "Beber água", "Beber 2 litros de água", "#22d3ee", "assets/svg/icon-water.svg"),
+                habitoComId(1L, "Estudar Java", "Estudar Java por 1 hora", "#3b82f6", "assets/svg/icon-code.svg")
+        ));
+        List<DtoConclusaoMes> conclusoes = List.of(
+                new DtoConclusaoMes(1L, mesPassado.atDay(3)),
+                new DtoConclusaoMes(2L, mesPassado.atDay(3))
+        );
+        when(historicoRepository.buscarConclusoesNoPeriodo(7L, mesPassado.atDay(1), mesPassado.atEndOfMonth()))
+                .thenReturn(conclusoes);
+
+        DtoCalendarioMes resultado = historicoService.buscarMes(mesPassado.getYear(), mesPassado.getMonthValue());
+
+        assertEquals(mesPassado.getYear(), resultado.ano());
+        assertEquals(mesPassado.getMonthValue(), resultado.mes());
+        assertEquals(2, resultado.habitos().size());
+        assertEquals(1L, resultado.habitos().get(0).id());
+        assertEquals("Estudar Java por 1 hora", resultado.habitos().get(0).meta());
+        assertEquals("#3b82f6", resultado.habitos().get(0).cor());
+        assertEquals("assets/svg/icon-code.svg", resultado.habitos().get(0).icone());
+        assertEquals(conclusoes, resultado.conclusoes());
+    }
+
+    @Test
+    void deveLancarExceptionQuandoMesForFuturo() {
+        YearMonth proximoMes = YearMonth.now().plusMonths(1);
+
+        assertThrows(RequisicaoInvalidaException.class, () ->
+                historicoService.buscarMes(proximoMes.getYear(), proximoMes.getMonthValue()));
+
+        verifyNoInteractions(usuarioRepository, habitoRepository, historicoRepository);
+    }
+
+    @Test
+    void deveLancarExceptionQuandoMesForInvalido() {
+        assertThrows(RequisicaoInvalidaException.class, () -> historicoService.buscarMes(2026, 13));
+        assertThrows(RequisicaoInvalidaException.class, () -> historicoService.buscarMes(2026, 0));
+    }
+
+    @Test
+    void deveLancarExceptionQuandoUsuarioNaoExisteAoBuscarMes() {
+        autenticarComo("fantasma@teste.com");
+        when(usuarioRepository.findByEmail("fantasma@teste.com")).thenReturn(Optional.empty());
+
+        YearMonth atual = YearMonth.now();
+        assertThrows(RecursoNaoEncontradoException.class, () ->
+                historicoService.buscarMes(atual.getYear(), atual.getMonthValue()));
+    }
 
     @Test
     void deveLancarExceptionQuandoHabitoNaoExiste() {
