@@ -53,8 +53,8 @@ class HistoricoControllerIntegrationTest {
         return usuarioRepository.save(usuario);
     }
 
-    private Habito criarHabito(Usuario usuario, String nome, String descricao, String cor, String icone) {
-        return habitoRepository.save(new Habito(usuario, nome, icone, cor, descricao));
+    private Habito criarHabito(Usuario usuario, String nome, String descricao, String color, String icon) {
+        return habitoRepository.save(new Habito(usuario, nome, icon, color, descricao));
     }
 
     private String bearer(Usuario usuario) {
@@ -90,9 +90,11 @@ class HistoricoControllerIntegrationTest {
                 .andExpect(jsonPath("$.habitos", hasSize(2)))
                 .andExpect(jsonPath("$.habitos[0].id").value(java.getId()))
                 .andExpect(jsonPath("$.habitos[0].nome").value("Estudar Java"))
-                .andExpect(jsonPath("$.habitos[0].meta").value("Estudar Java por 1 hora"))
-                .andExpect(jsonPath("$.habitos[0].cor").value("#3b82f6"))
-                .andExpect(jsonPath("$.habitos[0].icone").value("assets/svg/icon-code.svg"))
+                .andExpect(jsonPath("$.habitos[0].descricao").value("Estudar Java por 1 hora"))
+                .andExpect(jsonPath("$.habitos[0].color").value("#3b82f6"))
+                .andExpect(jsonPath("$.habitos[0].icon").value("assets/svg/icon-code.svg"))
+                .andExpect(jsonPath("$.habitos[0].meta").doesNotExist())
+                .andExpect(jsonPath("$.habitos[1].id").value(agua.getId()))
                 .andExpect(jsonPath("$.conclusoes", hasSize(1)))
                 .andExpect(jsonPath("$.conclusoes[0].habitoId").value(java.getId()))
                 .andExpect(jsonPath("$.conclusoes[0].data").value(mesAtual.atDay(1).toString()));

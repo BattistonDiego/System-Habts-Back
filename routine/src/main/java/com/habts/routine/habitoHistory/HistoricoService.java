@@ -29,7 +29,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -283,8 +282,7 @@ public class HistoricoService {
         Usuario user = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
 
-        List<DtoHabitoMes> habitos = habitoRepository.findByUsuarioId(user.getId()).stream()
-                .sorted(Comparator.comparing(Habito::getId))
+        List<DtoHabitoMes> habitos = habitoRepository.findByUsuarioIdOrderByIdAsc(user.getId()).stream()
                 .map(h -> new DtoHabitoMes(h.getId(), h.getNome(), h.getDescricao(), h.getColor(), h.getIcon()))
                 .toList();
 

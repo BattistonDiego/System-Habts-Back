@@ -216,7 +216,7 @@ public class HabitoServiceTest {
         SecurityContextHolder.setContext(securityContext);
 
         when(usuarioRepository.findByEmail("usuario@teste.com")).thenReturn(Optional.of(usuario));
-        when(habitoRepository.findByUsuarioId(usuario.getId())).thenReturn(listaHabitos);
+        when(habitoRepository.findByUsuarioIdOrderByIdAsc(usuario.getId())).thenReturn(listaHabitos);
 
         ResponseEntity<List<HabitoResponse>> resultado = habitoService.listAllHabito();
 
